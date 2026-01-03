@@ -170,43 +170,6 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
     { val: '12', label: 'Dec' }
   ]
 
-  // Fixed upload handler
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (images.length === 0) {
-      alert('Please select at least one image')
-      return
-    }
-    
-    try {
-      // Create FormData properly
-      const formData = new FormData()
-      formData.append('caption', caption)
-      
-      // Append all images correctly
-      images.forEach((image, index) => {
-        formData.append('images', image) // Use 'images' as key (plural)
-        // For debugging
-        console.log(`Appending image ${index + 1}:`, image.name, image.size)
-      })
-      
-      console.log(`Uploading ${images.length} images...`)
-      
-      // Call the parent handler with FormData
-      await onSendPost(formData)
-      
-      // Reset form
-      setCaption('')
-      setImages([])
-      setShowUpload(false)
-      
-    } catch (error) {
-      console.error('Upload error:', error)
-      alert('Failed to upload images. Please try again.')
-    }
-  }
-
   return (
     <div className='w-full'>
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pt-6'>
@@ -313,7 +276,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
 
       {showUpload && (
         <form
-          onSubmit={handleSubmit}
+          onSubmit={e => {
+            e.preventDefault()
+            onSendPost({ caption, images })
+            setCaption('')
+            setImages([])
+            setShowUpload(false)
+          }}
           className='mb-12 bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border border-gray-200 max-w-xl mx-auto'
         >
           <h3 className='text-xl font-bold mb-4'>New Post</h3>
@@ -323,71 +292,54 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             value={caption}
             onChange={e => setCaption(e.target.value)}
           />
-          <div className='mb-4'>
-            <p className='text-sm text-gray-500 mb-2'>
-              Selected: {images.length} image{images.length !== 1 ? 's' : ''}
-            </p>
-            <div className='grid grid-cols-4 gap-2'>
-              {images.map((img, i) => {
-                const uniqueId = `${img.name}-${img.size}-${img.lastModified}-${i}`
-                return (
-                  <div
-                    key={uniqueId}
-                    className='aspect-square rounded-lg overflow-hidden relative group'
-                  >
-                    <img
-                      src={previewUrls[uniqueId]}
-                      className='w-full h-full object-cover'
-                      alt='preview'
-                    />
-                    <button
-                      type='button'
-                      onClick={() =>
-                        setImages(images.filter((_, idx) => idx !== i))
-                      }
-                      className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
-                    >
-                      <FiX size={12} />
-                    </button>
-                  </div>
-                )
-              })}
-              <label className='aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors'>
-                <div className='text-center'>
-                  <FiUpload className='text-gray-400 mx-auto mb-1' />
-                  <span className='text-xs text-gray-500'>Add Images</span>
-                </div>
-                <input
-                  type='file'
-                  multiple
-                  className='hidden'
-                  onChange={e => {
-                    const newFiles = Array.from(e.target.files || [])
-                    if (newFiles.length > 0) {
-                      // Filter out duplicates by name and size
-                      const existingNames = new Set(images.map(img => `${img.name}-${img.size}`))
-                      const uniqueNewFiles = newFiles.filter(file => 
-                        !existingNames.has(`${file.name}-${file.size}`)
-                      )
-                      
-                      if (uniqueNewFiles.length > 0) {
-                        setImages([...images, ...uniqueNewFiles])
-                      }
-                      // Reset input value to allow uploading same file again
-                      e.target.value = null
+          <div className='grid grid-cols-4 gap-2 mb-4'>
+            {images.map((img, i) => {
+              const uniqueId = `${img.name}-${img.size}-${img.lastModified}-${i}`
+              return (
+                <div
+                  key={uniqueId}
+                  className='aspect-square rounded-lg overflow-hidden relative group'
+                >
+                  <img
+                    src={previewUrls[uniqueId]}
+                    className='w-full h-full object-cover'
+                    alt='preview'
+                  />
+                  <button
+                    type='button'
+                    onClick={() =>
+                      setImages(images.filter((_, idx) => idx !== i))
                     }
-                  }}
-                  accept='image/*'
-                />
-              </label>
-            </div>
+                    className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100'
+                  >
+                    <FiX size={12} />
+                  </button>
+                </div>
+              )
+            })}
+            <label className='aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50'>
+              <FiUpload className='text-gray-400' />
+              <input
+                type='file'
+                multiple
+                className='hidden'
+                onChange={e => {
+                  const newFiles = Array.from(e.target.files || [])
+                  if (newFiles.length > 0) {
+                    // Reset input value to allow uploading same file again
+                    e.target.value = null
+                    setImages([...images, ...newFiles])
+                  }
+                }}
+                accept='image/*'
+              />
+            </label>
           </div>
           <button
-            type='submit'
             disabled={loading || images.length === 0}
-            className='w-full bg-black text-white py-3 rounded-xl font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity'
+            className='w-full bg-black text-white py-3 rounded-xl font-bold hover:opacity-90 disabled:opacity-50'
           >
-            {loading ? `Uploading ${images.length} image${images.length !== 1 ? 's' : ''}...` : `Upload ${images.length} image${images.length !== 1 ? 's' : ''}`}
+            {loading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
       )}

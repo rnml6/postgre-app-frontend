@@ -343,7 +343,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                     <div className='w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500' />
                     <div className='flex flex-col'>
                       <span className='font-bold text-sm leading-none'>
-                        Community Member
+                        Mabait na Bata
                       </span>
                       <span className='text-gray-400 text-[10px] uppercase mt-1'>
                         {formatDate(post.created_at)}

@@ -12,6 +12,8 @@ import {
   FiRefreshCw
 } from 'react-icons/fi'
 
+const API_BASE_URL = 'https://postgre-app-backend.onrender.com'
+
 const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [subTab, setSubTab] = useState('gallery')
   const [showUpload, setShowUpload] = useState(false)
@@ -317,7 +319,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 className='break-inside-avoid rounded-2xl overflow-hidden group relative cursor-zoom-in border border-gray-100'
               >
                 <img
-                  src={`http://localhost:3002${img.image_url}`}
+                  src={`${API_BASE_URL}${img.image_url}`}
                   alt='gallery'
                   className='w-full h-auto object-cover hover:scale-105 transition-transform duration-500'
                 />
@@ -377,7 +379,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                       className='relative cursor-pointer w-full overflow-hidden bg-gray-50 flex justify-center'
                     >
                       <img
-                        src={`http://localhost:3002${post.images[0].image_url}`}
+                        src={`${API_BASE_URL}${post.images[0].image_url}`}
                         className='w-full max-h-[450px] object-cover hover:brightness-95 transition-all'
                         alt='post'
                       />
@@ -397,7 +399,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                           className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                         >
                           <img
-                            src={`http://localhost:3002${img.image_url}`}
+                            src={`${API_BASE_URL}${img.image_url}`}
                             className='w-full h-full object-cover hover:brightness-90 transition-all'
                             alt='post'
                           />
@@ -416,7 +418,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                             className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                           >
                             <img
-                              src={`http://localhost:3002${img.image_url}`}
+                              src={`${API_BASE_URL}${img.image_url}`}
                               className='w-full h-full object-cover hover:brightness-90 transition-all'
                               alt='post'
                             />
@@ -433,7 +435,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                               className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                             >
                               <img
-                                src={`http://localhost:3002${img.image_url}`}
+                                src={`${API_BASE_URL}${img.image_url}`}
                                 className='w-full h-full object-cover hover:brightness-90 transition-all'
                                 alt='post'
                               />
@@ -492,7 +494,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             onClick={e => e.stopPropagation()}
           >
             <img
-              src={`http://localhost:3002${selectedPost.images[currentImgIndex].image_url}`}
+              src={`${API_BASE_URL}${selectedPost.images[currentImgIndex].image_url}`}
               className='max-h-[75vh] md:max-h-[85vh] w-auto max-w-full object-contain shadow-2xl rounded-lg'
               alt='fullscreen'
             />

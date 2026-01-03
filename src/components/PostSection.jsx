@@ -338,7 +338,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 key={post.id}
                 className='bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100'
               >
-                <div className='p-4 pb-2'>
+                <div className='px-4 pt-4 pb-0'>
                   <div className='flex items-center gap-3 mb-3'>
                     <div className='w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500' />
                     <div className='flex flex-col'>

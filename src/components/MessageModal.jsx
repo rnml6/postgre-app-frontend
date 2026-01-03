@@ -25,9 +25,8 @@ const MessageModal = ({ message, onClose, formatDate }) => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 pt-2 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto p-8 py-2 scrollbar-hide">
           <div className="space-y-4">
-            {/* Added break-words to prevent horizontal overflow */}
             <p className="text-lg md:text-xl text-gray-800 leading-relaxed font-medium whitespace-pre-wrap break-words">
               {message.content}
             </p>

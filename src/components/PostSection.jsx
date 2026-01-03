@@ -20,40 +20,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [caption, setCaption] = useState('')
   const [images, setImages] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+
   const [filterMonth, setFilterMonth] = useState('')
   const [filterYear, setFilterYear] = useState('')
+
   const [selectedPost, setSelectedPost] = useState(null)
   const [currentImgIndex, setCurrentImgIndex] = useState(0)
   const [expandedCaptions, setExpandedCaptions] = useState({})
-
-  // Create preview URLs for images
-  const [previewUrls, setPreviewUrls] = useState({})
-
-  // Generate and clean up preview URLs
-  useEffect(() => {
-    const newUrls = {}
-    
-    images.forEach((img, index) => {
-      if (img instanceof File) {
-        const uniqueId = `${img.name}-${img.size}-${img.lastModified}-${index}`
-        newUrls[uniqueId] = URL.createObjectURL(img)
-      }
-    })
-    
-    // Revoke old URLs to prevent memory leaks
-    Object.values(previewUrls).forEach(url => {
-      if (url) URL.revokeObjectURL(url)
-    })
-    
-    setPreviewUrls(newUrls)
-    
-    return () => {
-      // Cleanup on unmount
-      Object.values(newUrls).forEach(url => {
-        if (url) URL.revokeObjectURL(url)
-      })
-    }
-  }, [images])
 
   const years = useMemo(() => {
     const yearSet = new Set(
@@ -293,44 +266,36 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             onChange={e => setCaption(e.target.value)}
           />
           <div className='grid grid-cols-4 gap-2 mb-4'>
-            {images.map((img, i) => {
-              const uniqueId = `${img.name}-${img.size}-${img.lastModified}-${i}`
-              return (
-                <div
-                  key={uniqueId}
-                  className='aspect-square rounded-lg overflow-hidden relative group'
+            {images.map((img, i) => (
+              <div
+                key={i}
+                className='aspect-square rounded-lg overflow-hidden relative group'
+              >
+                <img
+                  src={URL.createObjectURL(img)}
+                  className='w-full h-full object-cover'
+                  alt='preview'
+                />
+                <button
+                  type='button'
+                  onClick={() =>
+                    setImages(images.filter((_, idx) => idx !== i))
+                  }
+                  className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100'
                 >
-                  <img
-                    src={previewUrls[uniqueId]}
-                    className='w-full h-full object-cover'
-                    alt='preview'
-                  />
-                  <button
-                    type='button'
-                    onClick={() =>
-                      setImages(images.filter((_, idx) => idx !== i))
-                    }
-                    className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100'
-                  >
-                    <FiX size={12} />
-                  </button>
-                </div>
-              )
-            })}
+                  <FiX size={12} />
+                </button>
+              </div>
+            ))}
             <label className='aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50'>
               <FiUpload className='text-gray-400' />
               <input
                 type='file'
                 multiple
                 className='hidden'
-                onChange={e => {
-                  const newFiles = Array.from(e.target.files || [])
-                  if (newFiles.length > 0) {
-                    // Reset input value to allow uploading same file again
-                    e.target.value = null
-                    setImages([...images, ...newFiles])
-                  }
-                }}
+                onChange={e =>
+                  setImages([...images, ...Array.from(e.target.files)])
+                }
                 accept='image/*'
               />
             </label>
@@ -354,7 +319,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 className='break-inside-avoid rounded-2xl overflow-hidden group relative cursor-zoom-in border border-gray-100'
               >
                 <img
-                  src={`${API_BASE_URL}${img.image_url}`}
+                  src={`https://postgre-app-backend.onrender.com${img.image_url}`}
                   alt='gallery'
                   className='w-full h-auto object-cover hover:scale-105 transition-transform duration-500'
                 />

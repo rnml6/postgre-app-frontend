@@ -170,32 +170,6 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
     { val: '12', label: 'Dec' }
   ]
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (images.length === 0) {
-      alert('Please select at least one image')
-      return
-    }
-
-    // Create FormData object for multipart/form-data upload
-    const formData = new FormData()
-    formData.append('caption', caption)
-    
-    // Append each image file
-    images.forEach((img, index) => {
-      formData.append('images', img) // Use 'images' (plural) to match backend expectation
-    })
-    
-    // Call onSendPost with FormData
-    await onSendPost(formData)
-    
-    // Reset form only if upload was successful
-    setCaption('')
-    setImages([])
-    setShowUpload(false)
-  }
-
   return (
     <div className='w-full'>
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pt-6'>
@@ -302,7 +276,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
 
       {showUpload && (
         <form
-          onSubmit={handleSubmit}
+          onSubmit={e => {
+            e.preventDefault()
+            onSendPost({ caption, images })
+            setCaption('')
+            setImages([])
+            setShowUpload(false)
+          }}
           className='mb-12 bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border border-gray-200 max-w-xl mx-auto'
         >
           <h3 className='text-xl font-bold mb-4'>New Post</h3>

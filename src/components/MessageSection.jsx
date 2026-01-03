@@ -200,7 +200,7 @@ const MessageSection = ({ messages, onSendMessage, loading, formatDate }) => {
                 {msg.content}
               </p>
 
-              <div className='flex items-center justify-between mt-2'>
+              <div className='flex items-center justify-between'>
                 <div className='flex items-center gap-2 text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest'>
                   <FiCalendar size={12} className='text-blue-500' />
                   <span>{formatDate(msg.created_at)}</span>

@@ -28,6 +28,19 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [currentImgIndex, setCurrentImgIndex] = useState(0)
   const [expandedCaptions, setExpandedCaptions] = useState({})
 
+  // Helper function to ensure image URLs are complete
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+    
+    // If it's already a full URL, use it as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // Otherwise prepend the backend URL
+    return `${API_BASE_URL}${imagePath}`;
+  };
+
   const years = useMemo(() => {
     const yearSet = new Set(
       posts.map(post => new Date(post.created_at).getFullYear().toString())
@@ -319,7 +332,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 className='break-inside-avoid rounded-2xl overflow-hidden group relative cursor-zoom-in border border-gray-100'
               >
                 <img
-                  src={`${API_BASE_URL}${img.image_url}`}
+                  src={getImageUrl(img.image_url)}
                   alt='gallery'
                   className='w-full h-auto object-cover hover:scale-105 transition-transform duration-500'
                 />
@@ -379,7 +392,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                       className='relative cursor-pointer w-full overflow-hidden bg-gray-50 flex justify-center'
                     >
                       <img
-                        src={`${API_BASE_URL}${post.images[0].image_url}`}
+                        src={getImageUrl(post.images[0].image_url)}
                         className='w-full max-h-[450px] object-cover hover:brightness-95 transition-all'
                         alt='post'
                       />
@@ -399,7 +412,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                           className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                         >
                           <img
-                            src={`${API_BASE_URL}${img.image_url}`}
+                            src={getImageUrl(img.image_url)}
                             className='w-full h-full object-cover hover:brightness-90 transition-all'
                             alt='post'
                           />
@@ -418,7 +431,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                             className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                           >
                             <img
-                              src={`${API_BASE_URL}${img.image_url}`}
+                              src={getImageUrl(img.image_url)}
                               className='w-full h-full object-cover hover:brightness-90 transition-all'
                               alt='post'
                             />
@@ -435,7 +448,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                               className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                             >
                               <img
-                                src={`${API_BASE_URL}${img.image_url}`}
+                                src={getImageUrl(img.image_url)}
                                 className='w-full h-full object-cover hover:brightness-90 transition-all'
                                 alt='post'
                               />
@@ -494,7 +507,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             onClick={e => e.stopPropagation()}
           >
             <img
-              src={`${API_BASE_URL}${selectedPost.images[currentImgIndex].image_url}`}
+              src={getImageUrl(selectedPost.images[currentImgIndex].image_url)}
               className='max-h-[75vh] md:max-h-[85vh] w-auto max-w-full object-contain shadow-2xl rounded-lg'
               alt='fullscreen'
             />

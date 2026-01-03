@@ -14,6 +14,24 @@ import {
 
 const API_BASE_URL = 'https://postgre-app-backend.onrender.com'
 
+// Helper function to ensure we have a complete image URL
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+    
+    // If it's already a full URL, return it
+    if (imagePath.startsWith('http')) {
+        return imagePath;
+    }
+    
+    // If it starts with /uploads, prepend the API base URL
+    if (imagePath.startsWith('/uploads')) {
+        return `${API_BASE_URL}${imagePath}`;
+    }
+    
+    // Otherwise, prepend /uploads and then the API base URL
+    return `${API_BASE_URL}/uploads/${imagePath}`;
+}
+
 const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [subTab, setSubTab] = useState('gallery')
   const [showUpload, setShowUpload] = useState(false)
@@ -319,9 +337,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 className='break-inside-avoid rounded-2xl overflow-hidden group relative cursor-zoom-in border border-gray-100'
               >
                 <img
-                  src={`${API_BASE_URL}${img.image_url}`}
+                  src={getImageUrl(img.image_url)}
                   alt='gallery'
                   className='w-full h-auto object-cover hover:scale-105 transition-transform duration-500'
+                  onError={(e) => {
+                    console.error('Failed to load image:', img.image_url);
+                    e.target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
+                  }}
                 />
               </div>
             ))
@@ -379,9 +401,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                       className='relative cursor-pointer w-full overflow-hidden bg-gray-50 flex justify-center'
                     >
                       <img
-                        src={`${API_BASE_URL}${post.images[0].image_url}`}
+                        src={getImageUrl(post.images[0].image_url)}
                         className='w-full max-h-[450px] object-cover hover:brightness-95 transition-all'
                         alt='post'
+                        onError={(e) => {
+                          console.error('Failed to load image:', post.images[0].image_url);
+                          e.target.src = 'https://via.placeholder.com/800x450?text=Image+Not+Found';
+                        }}
                       />
                     </div>
                   )}
@@ -399,9 +425,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                           className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                         >
                           <img
-                            src={`${API_BASE_URL}${img.image_url}`}
+                            src={getImageUrl(img.image_url)}
                             className='w-full h-full object-cover hover:brightness-90 transition-all'
                             alt='post'
+                            onError={(e) => {
+                              console.error('Failed to load image:', img.image_url);
+                              e.target.src = 'https://via.placeholder.com/400x400?text=Image+Error';
+                            }}
                           />
                         </div>
                       ))}
@@ -418,9 +448,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                             className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                           >
                             <img
-                              src={`${API_BASE_URL}${img.image_url}`}
+                              src={getImageUrl(img.image_url)}
                               className='w-full h-full object-cover hover:brightness-90 transition-all'
                               alt='post'
+                              onError={(e) => {
+                                console.error('Failed to load image:', img.image_url);
+                                e.target.src = 'https://via.placeholder.com/400x400?text=Image+Error';
+                              }}
                             />
                           </div>
                         ))}
@@ -435,9 +469,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                               className='relative cursor-pointer aspect-square overflow-hidden bg-gray-50'
                             >
                               <img
-                                src={`${API_BASE_URL}${img.image_url}`}
+                                src={getImageUrl(img.image_url)}
                                 className='w-full h-full object-cover hover:brightness-90 transition-all'
                                 alt='post'
+                                onError={(e) => {
+                                  console.error('Failed to load image:', img.image_url);
+                                  e.target.src = 'https://via.placeholder.com/400x400?text=Image+Error';
+                                }}
                               />
                               {actualIdx === 4 && imgCount > 5 && (
                                 <div className='absolute inset-0 bg-black/60 flex flex-col items-center justify-center'>
@@ -494,9 +532,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             onClick={e => e.stopPropagation()}
           >
             <img
-              src={`${API_BASE_URL}${selectedPost.images[currentImgIndex].image_url}`}
+              src={getImageUrl(selectedPost.images[currentImgIndex].image_url)}
               className='max-h-[75vh] md:max-h-[85vh] w-auto max-w-full object-contain shadow-2xl rounded-lg'
               alt='fullscreen'
+              onError={(e) => {
+                console.error('Failed to load fullscreen image:', selectedPost.images[currentImgIndex].image_url);
+                e.target.src = 'https://via.placeholder.com/1200x800?text=Image+Not+Found';
+              }}
             />
 
             <div className='mt-6 flex items-center gap-6 text-white'>

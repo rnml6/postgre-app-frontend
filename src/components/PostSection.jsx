@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   FiGrid,
   FiLayers,
@@ -32,6 +32,48 @@ const getImageUrl = (imagePath) => {
     return `${API_BASE_URL}/uploads/${imagePath}`;
 }
 
+// Custom hook for managing object URLs
+const useObjectUrls = () => {
+  const urlsRef = useRef(new Map());
+  
+  const createUrl = (file) => {
+    // Create a unique key based on file properties
+    const key = `${file.name}-${file.size}-${file.lastModified}`;
+    
+    // If URL already exists for this file, return it
+    if (urlsRef.current.has(key)) {
+      return urlsRef.current.get(key);
+    }
+    
+    // Create new URL
+    const url = URL.createObjectURL(file);
+    urlsRef.current.set(key, url);
+    return url;
+  };
+  
+  const revokeUrls = () => {
+    urlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    urlsRef.current.clear();
+  };
+  
+  const removeUrl = (file) => {
+    const key = `${file.name}-${file.size}-${file.lastModified}`;
+    if (urlsRef.current.has(key)) {
+      URL.revokeObjectURL(urlsRef.current.get(key));
+      urlsRef.current.delete(key);
+    }
+  };
+  
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      revokeUrls();
+    };
+  }, []);
+  
+  return { createUrl, revokeUrls, removeUrl };
+};
+
 const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [subTab, setSubTab] = useState('gallery')
   const [showUpload, setShowUpload] = useState(false)
@@ -45,6 +87,9 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [selectedPost, setSelectedPost] = useState(null)
   const [currentImgIndex, setCurrentImgIndex] = useState(0)
   const [expandedCaptions, setExpandedCaptions] = useState({})
+  
+  const fileInputRef = useRef(null);
+  const { createUrl, removeUrl, revokeUrls } = useObjectUrls();
 
   const years = useMemo(() => {
     const yearSet = new Set(
@@ -161,6 +206,64 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
     { val: '12', label: 'Dec' }
   ]
 
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const newFiles = Array.from(e.target.files);
+    
+    // Create a unique key for each file to avoid duplicates
+    const existingKeys = new Set(
+      images.map(img => `${img.name}-${img.size}-${img.lastModified}`)
+    );
+    
+    // Filter out duplicates
+    const uniqueNewFiles = newFiles.filter(file => {
+      const key = `${file.name}-${file.size}-${file.lastModified}`;
+      return !existingKeys.has(key);
+    });
+    
+    if (uniqueNewFiles.length > 0) {
+      setImages(prev => [...prev, ...uniqueNewFiles]);
+    }
+    
+    // Reset file input to allow selecting same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Clean up object URLs when images change or component unmounts
+  useEffect(() => {
+    return () => {
+      // Cleanup on component unmount or when upload form closes
+      revokeUrls();
+    };
+  }, [revokeUrls]);
+
+  const handleRemoveImage = (index) => {
+    const fileToRemove = images[index];
+    removeUrl(fileToRemove);
+    setImages(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleCancelUpload = () => {
+    // Clean up all object URLs
+    revokeUrls();
+    setCaption('');
+    setImages([]);
+    setShowUpload(false);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSendPost({ caption, images });
+    
+    // Clean up object URLs after upload
+    revokeUrls();
+    setCaption('');
+    setImages([]);
+    setShowUpload(false);
+  };
+
   return (
     <div className='w-full'>
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pt-6'>
@@ -190,11 +293,10 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
         </div>
         <button
           onClick={() => {
+            setShowUpload(!showUpload);
             if (showUpload) {
-              setCaption('')
-              setImages([])
+              handleCancelUpload();
             }
-            setShowUpload(!showUpload)
           }}
           className='bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 self-start'
         >
@@ -267,13 +369,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
 
       {showUpload && (
         <form
-          onSubmit={e => {
-            e.preventDefault()
-            onSendPost({ caption, images })
-            setCaption('')
-            setImages([])
-            setShowUpload(false)
-          }}
+          onSubmit={handleSubmit}
           className='mb-12 bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border border-gray-200 max-w-xl mx-auto'
         >
           <h3 className='text-xl font-bold mb-4'>New Post</h3>
@@ -286,41 +382,42 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
           <div className='grid grid-cols-4 gap-2 mb-4'>
             {images.map((img, i) => (
               <div
-                key={i}
+                key={`${img.name}-${img.size}-${img.lastModified}-${i}`}
                 className='aspect-square rounded-lg overflow-hidden relative group'
               >
                 <img
-                  src={URL.createObjectURL(img)}
+                  src={createUrl(img)}
                   className='w-full h-full object-cover'
-                  alt='preview'
+                  alt={`preview-${i}`}
+                  onError={(e) => {
+                    console.error('Failed to load preview image:', img.name);
+                    e.target.src = 'https://via.placeholder.com/200x200?text=Image+Error';
+                  }}
                 />
                 <button
                   type='button'
-                  onClick={() =>
-                    setImages(images.filter((_, idx) => idx !== i))
-                  }
-                  className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100'
+                  onClick={() => handleRemoveImage(i)}
+                  className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity'
                 >
                   <FiX size={12} />
                 </button>
               </div>
             ))}
-            <label className='aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50'>
+            <label className='aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors'>
               <FiUpload className='text-gray-400' />
               <input
+                ref={fileInputRef}
                 type='file'
                 multiple
                 className='hidden'
-                onChange={e =>
-                  setImages([...images, ...Array.from(e.target.files)])
-                }
+                onChange={handleFileSelect}
                 accept='image/*'
               />
             </label>
           </div>
           <button
             disabled={loading || images.length === 0}
-            className='w-full bg-black text-white py-3 rounded-xl font-bold hover:opacity-90 disabled:opacity-50'
+            className='w-full bg-black text-white py-3 rounded-xl font-bold hover:opacity-90 disabled:opacity-50 transition-opacity'
           >
             {loading ? 'Uploading...' : 'Upload'}
           </button>

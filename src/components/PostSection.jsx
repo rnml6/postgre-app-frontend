@@ -26,29 +26,25 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
   const [currentImgIndex, setCurrentImgIndex] = useState(0)
   const [expandedCaptions, setExpandedCaptions] = useState({})
 
-  // Create preview URLs for images
   const [previewUrls, setPreviewUrls] = useState({})
 
-  // Generate and clean up preview URLs
   useEffect(() => {
     const newUrls = {}
-    
+
     images.forEach((img, index) => {
       if (img instanceof File) {
         const uniqueId = `${img.name}-${img.size}-${img.lastModified}-${index}`
         newUrls[uniqueId] = URL.createObjectURL(img)
       }
     })
-    
-    // Revoke old URLs to prevent memory leaks
+
     Object.values(previewUrls).forEach(url => {
       if (url) URL.revokeObjectURL(url)
     })
-    
+
     setPreviewUrls(newUrls)
-    
+
     return () => {
-      // Cleanup on unmount
       Object.values(newUrls).forEach(url => {
         if (url) URL.revokeObjectURL(url)
       })
@@ -326,7 +322,6 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 onChange={e => {
                   const newFiles = Array.from(e.target.files || [])
                   if (newFiles.length > 0) {
-                    // Reset input value to allow uploading same file again
                     e.target.value = null
                     setImages([...images, ...newFiles])
                   }

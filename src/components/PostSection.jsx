@@ -52,34 +52,26 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
     }
   }, [images])
 
-  // Add this download function
   const downloadImage = async (imageUrl, filename) => {
     try {
-      // Fetch the image with full quality
       const response = await fetch(imageUrl)
       const blob = await response.blob()
       
-      // Create a temporary URL for the blob
       const blobUrl = window.URL.createObjectURL(blob)
       
-      // Create a temporary anchor element
       const link = document.createElement('a')
       link.href = blobUrl
       
-      // Set the download filename
-      // If no filename provided, extract from URL or use timestamp
       const downloadName = filename || 
         imageUrl.split('/').pop() || 
         `image-${Date.now()}.jpg`
       
       link.download = downloadName
       
-      // Append to body, click, and remove
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       
-      // Clean up the blob URL
       window.URL.revokeObjectURL(blobUrl)
     } catch (error) {
       console.error('Error downloading image:', error)
@@ -405,13 +397,13 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
                 className='bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100'
               >
                 <div className='px-4 pt-4 pb-0'>
-                  <div className='flex items-center gap-3 mb-3'>
+                  <div className='flex items-center gap-2 mb-3'>
                     <div className='w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500' />
                     <div className='flex flex-col'>
                       <span className='font-bold text-sm leading-none'>
                         Mabait na Bata
                       </span>
-                      <span className='text-gray-400 text-[10px] uppercase mt-1'>
+                      <span className='text-gray-400 text-[10px] uppercase mt-0.5'>
                         {formatDate(post.created_at)}
                       </span>
                     </div>
@@ -531,14 +523,7 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
           className='fixed inset-0 z-[999] bg-black/95 flex items-center justify-center p-4'
           onClick={closeModal}
         >
-          <button
-            className='absolute top-6 right-6 text-white text-3xl z-[1001]'
-            onClick={closeModal}
-          >
-            <FiX />
-          </button>
-
-          {/* Download Button */}
+          {/* Download Button - Left Side */}
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -547,13 +532,22 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
               const filename = `image-${selectedPost.id}-${currentImgIndex + 1}.jpg`
               downloadImage(imageUrl, filename)
             }}
-            className='absolute top-6 left-6 z-[1001] bg-white/10 hover:bg-white/20 p-3 rounded-full text-white backdrop-blur-md transition-all group'
+            className='absolute top-6 left-6 z-[1001] bg-black hover:bg-black/80 p-3 rounded-full text-white transition-all group border border-white/20'
             title='Download image'
           >
             <FiDownload size={20} />
             <span className='absolute left-1/2 -translate-x-1/2 -bottom-8 text-xs bg-black/80 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none'>
               Download
             </span>
+          </button>
+
+          {/* Close Button - Right Side */}
+          <button
+            className='absolute top-6 right-6 z-[1001] bg-black hover:bg-black/80 p-3 rounded-full text-white transition-all border border-white/20'
+            onClick={closeModal}
+            title='Close'
+          >
+            <FiX size={20} />
           </button>
 
           {showPrevArrow && (

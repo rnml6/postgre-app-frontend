@@ -56,22 +56,21 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
     try {
       const response = await fetch(imageUrl)
       const blob = await response.blob()
-      
+
       const blobUrl = window.URL.createObjectURL(blob)
-      
+
       const link = document.createElement('a')
       link.href = blobUrl
-      
-      const downloadName = filename || 
-        imageUrl.split('/').pop() || 
-        `image-${Date.now()}.jpg`
-      
+
+      const downloadName =
+        filename || imageUrl.split('/').pop() || `image-${Date.now()}.jpg`
+
       link.download = downloadName
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       window.URL.revokeObjectURL(blobUrl)
     } catch (error) {
       console.error('Error downloading image:', error)
@@ -523,13 +522,14 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
           className='fixed inset-0 z-[999] bg-black/95 flex items-center justify-center p-4'
           onClick={closeModal}
         >
-          {/* Download Button - Left Side */}
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               const currentImage = selectedPost.images[currentImgIndex]
               const imageUrl = currentImage.image_url
-              const filename = `image-${selectedPost.id}-${currentImgIndex + 1}.jpg`
+              const filename = `image-${selectedPost.id}-${
+                currentImgIndex + 1
+              }.jpg`
               downloadImage(imageUrl, filename)
             }}
             className='absolute top-6 left-6 z-[1001] bg-black hover:bg-black/80 p-3 rounded-full text-white transition-all group border border-white/20'
@@ -541,7 +541,6 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             </span>
           </button>
 
-          {/* Close Button - Right Side */}
           <button
             className='absolute top-6 right-6 z-[1001] bg-black hover:bg-black/80 p-3 rounded-full text-white transition-all border border-white/20'
             onClick={closeModal}

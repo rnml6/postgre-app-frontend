@@ -9,7 +9,8 @@ import {
   FiChevronRight,
   FiSearch,
   FiCalendar,
-  FiRefreshCw
+  FiRefreshCw,
+  FiDownload
 } from 'react-icons/fi'
 
 const API_BASE_URL = 'https://postgre-app-backend.onrender.com'
@@ -50,6 +51,41 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
       })
     }
   }, [images])
+
+  // Add this download function
+  const downloadImage = async (imageUrl, filename) => {
+    try {
+      // Fetch the image with full quality
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      
+      // Create a temporary URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob)
+      
+      // Create a temporary anchor element
+      const link = document.createElement('a')
+      link.href = blobUrl
+      
+      // Set the download filename
+      // If no filename provided, extract from URL or use timestamp
+      const downloadName = filename || 
+        imageUrl.split('/').pop() || 
+        `image-${Date.now()}.jpg`
+      
+      link.download = downloadName
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+      console.error('Error downloading image:', error)
+      alert('Failed to download image. Please try again.')
+    }
+  }
 
   const years = useMemo(() => {
     const yearSet = new Set(
@@ -500,6 +536,24 @@ const PostSection = ({ posts, onSendPost, loading, formatDate }) => {
             onClick={closeModal}
           >
             <FiX />
+          </button>
+
+          {/* Download Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              const currentImage = selectedPost.images[currentImgIndex]
+              const imageUrl = currentImage.image_url
+              const filename = `image-${selectedPost.id}-${currentImgIndex + 1}.jpg`
+              downloadImage(imageUrl, filename)
+            }}
+            className='absolute top-6 left-6 z-[1001] bg-white/10 hover:bg-white/20 p-3 rounded-full text-white backdrop-blur-md transition-all group'
+            title='Download image'
+          >
+            <FiDownload size={20} />
+            <span className='absolute left-1/2 -translate-x-1/2 -bottom-8 text-xs bg-black/80 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none'>
+              Download
+            </span>
           </button>
 
           {showPrevArrow && (
